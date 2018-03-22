@@ -1,0 +1,34 @@
+.App {
+  display: flex;
+  flex-direction: row;
+  height: 100vh;
+  text-align: center;
+}
+
+.App-sidebar {
+  flex: 0 1 30vw;
+  overflow: auto;
+}
+
+.App-sidebar,
+.App-header {
+  background-color: #222;
+  color: white;
+  padding: 20px;
+}
+
+.App-title {
+  font-size: 1.5em;
+}
+
+.App-main {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.App-main,
+.App-body {
+  flex: 1 1 100%;
+  font-size: large;
+}
