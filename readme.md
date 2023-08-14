@@ -1,5 +1,7 @@
 # UK Crime Map - React Project
 
+![Package Structure](image.png)
+
 This project is a visualization tool that displays crime data from the UK using data from the [Police UK API](http://data.police.uk/api/). As users zoom in on specific areas within the map, more detailed crime data is revealed.
 
 ## Features:
