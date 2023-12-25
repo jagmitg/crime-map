@@ -14,7 +14,8 @@
         "noFallthroughCasesInSwitch": true,
         "allowJs": true,
         "skipLibCheck": true,
-        "esModuleInterop": true
+        "esModuleInterop": true,
+        "types": ["googlemaps", "node"]
     },
     "include": ["src"]
 }

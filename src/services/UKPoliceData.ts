@@ -1,5 +1,5 @@
 const rootPath: string = "https://corsproxy.io/?http://data.police.uk/api/";
-const apiPaths: { CRIMES_STREET: string } = {
+const apiPaths: { [key: string]: string } = {
     CRIMES_STREET: "/crimes-street/all-crime"
 };
 
@@ -24,17 +24,16 @@ interface IPosition {
 interface ISpot {
     position: IPosition;
     title: { [key: string]: number };
+    label?: string;
 }
 
-/**
- * This class provides methods to set and fetch
- * the query for the UK Police Data API
- *
- * @class
- */
 class UKPoliceData {
     private state: IState;
     private categories: ICategories;
+
+    public getCategories() {
+        return this.categories;
+    }
 
     constructor() {
         this.state = {
@@ -80,35 +79,40 @@ class UKPoliceData {
         return fetch(url)
             .then((response) => response.json())
             .then((crimes) => {
-                let crimeSpots: { [key: string]: ISpot } = crimes.reduce((spot: any, crime: any) => {
-                    let locationKey: string = `${crime.location.latitude},${crime.location.longitude}`;
-                    let location: IPosition = {
-                        lat: parseFloat(crime.location.latitude),
-                        lng: parseFloat(crime.location.longitude)
-                    };
+                if (!Array.isArray(crimes)) {
+                    throw new Error("Fetched data is not an array");
+                }
 
-                    if (!spot[locationKey]) {
-                        spot[locationKey] = { position: location, title: {} };
-                    }
+                let crimeSpots: { [key: string]: ISpot } = crimes.reduce(
+                    (spot: { [key: string]: ISpot }, crime: any) => {
+                        let locationKey: string = `${crime.location.latitude},${crime.location.longitude}`;
+                        let location: IPosition = {
+                            lat: parseFloat(crime.location.latitude),
+                            lng: parseFloat(crime.location.longitude)
+                        };
 
-                    spot[locationKey].title[crime.category] =
-                        (spot[locationKey].title[crime.category] || 0) + 1;
+                        if (!spot[locationKey]) {
+                            spot[locationKey] = { position: location, title: {} };
+                        }
 
-                    return spot;
-                }, {});
+                        spot[locationKey].title[crime.category] =
+                            (spot[locationKey].title[crime.category] || 0) + 1;
 
-                let spots: any[] = Object.values(crimeSpots)
+                        return spot;
+                    },
+                    {}
+                );
+
+                let spots: ISpot[] = Object.values(crimeSpots)
                     .sort((a: ISpot, b: ISpot) => {
                         let sizeA = Object.keys(a.title).length,
                             sizeB = Object.keys(b.title).length;
 
                         return sizeA - sizeB;
                     })
-                    .map((crime: ISpot) => {
-                        crime.title = Object.keys(crime.title).join(" | ");
-                        crime.label = this.getCategory(crime.title);
-
-                        return crime;
+                    .map((crimeSpot: ISpot) => {
+                        crimeSpot.label = this.getCategory(Object.keys(crimeSpot.title).join(" | "));
+                        return crimeSpot;
                     });
 
                 return spots;

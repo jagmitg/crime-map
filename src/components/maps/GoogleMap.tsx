@@ -1,5 +1,6 @@
-import React, { Component } from "react";
+import React, { Component, RefObject } from "react";
 
+// Define the shape of your default values
 const defaultValues = {
     position: {
         lat: 51.544486,
@@ -7,8 +8,21 @@ const defaultValues = {
     }
 };
 
-class GoogleMap extends Component {
-    constructor(props) {
+// Props and State interfaces
+interface GoogleMapProps {
+    onLoad?: (map: google.maps.Map) => void; // Optional onLoad function
+    onError?: () => void; // Optional onError function
+}
+
+interface GoogleMapState {
+    scriptsLoaded: boolean;
+    scriptsError: boolean;
+}
+
+class GoogleMap extends Component<GoogleMapProps, GoogleMapState> {
+    private mapRef: RefObject<HTMLDivElement>;
+
+    constructor(props: GoogleMapProps) {
         super(props);
         this.mapRef = React.createRef();
         this.state = {
@@ -18,7 +32,7 @@ class GoogleMap extends Component {
     }
 
     componentDidMount() {
-        this.loadScript("https://maps.googleapis.com/maps/api/js?key=AIzaSyAyesbQMyKVVbBgKVi2g6VX7mop2z96jBo")
+        this.loadScript("https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY")
             .then(() => {
                 return this.loadScript(
                     "https://cdnjs.cloudflare.com/ajax/libs/js-marker-clusterer/1.0.0/markerclusterer_compiled.js"
@@ -35,26 +49,26 @@ class GoogleMap extends Component {
             });
     }
 
-    loadScript(url) {
+    loadScript(url: string): Promise<void> {
         return new Promise((resolve, reject) => {
             const script = document.createElement("script");
             script.src = url;
-            script.onload = resolve;
-            script.onerror = reject;
+            script.onload = () => resolve();
+            script.onerror = () => reject();
             document.body.appendChild(script);
         });
     }
 
-    initializeMap() {
+    initializeMap = () => {
         if (this.state.scriptsLoaded && this.props.onLoad && typeof this.props.onLoad === "function") {
             this.props.onLoad(
-                new window.google.maps.Map(this.mapRef.current, {
+                new window.google.maps.Map(this.mapRef.current!, {
                     center: defaultValues.position,
                     zoom: 14
                 })
             );
         }
-    }
+    };
 
     render() {
         return <div ref={this.mapRef} style={{ height: "100%" }}></div>;
